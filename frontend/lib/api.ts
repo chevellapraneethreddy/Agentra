@@ -1,4 +1,14 @@
 const getApiBaseUrl = () => {
+  // If NEXT_PUBLIC_API_URL is configured (e.g. in Vercel settings pointing to Render), prioritize it.
+  let envUrl = process.env.NEXT_PUBLIC_API_URL
+  if (envUrl) {
+    envUrl = envUrl.replace(/\/$/, '')
+    if (!envUrl.endsWith('/api/v1')) {
+      envUrl = `${envUrl}/api/v1`
+    }
+    return envUrl
+  }
+
   // Check if window is defined (browser side execution)
   if (typeof window !== 'undefined') {
     const host = window.location.host
@@ -8,12 +18,12 @@ const getApiBaseUrl = () => {
       const backendHost = host.replace('-3005.', '-8000.').replace('3005-', '8000-')
       return `${window.location.protocol}//${backendHost}/api/v1`
     }
-    // Standard deployment same-host routing
-    if (!host.includes('localhost:3005') && !host.includes('127.0.0.1:3005')) {
+    // Standard same-host routing (ignore if running locally on dev ports 3000/3005/3001)
+    if (!host.includes('localhost:') && !host.includes('127.0.0.1:')) {
       return '/api/v1'
     }
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+  return 'http://localhost:8000/api/v1'
 }
 
 const API_BASE_URL = getApiBaseUrl()

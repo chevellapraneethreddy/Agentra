@@ -5,6 +5,8 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.api import api_router
 import logging
+import os
+import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentra")
@@ -24,10 +26,24 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Dynamically parse CORS origins from environment
+cors_origins = []
+raw_origins = os.getenv("CORS_ORIGINS")
+if raw_origins:
+    try:
+        cors_origins = json.loads(raw_origins)
+        if isinstance(cors_origins, str):
+            cors_origins = [cors_origins]
+    except Exception:
+        cors_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+else:
+    cors_origins = settings.CORS_ORIGINS
+
 # Set up CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

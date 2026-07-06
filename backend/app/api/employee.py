@@ -27,8 +27,8 @@ def hire_employee(
     """Deploy and configure a new custom AI Employee in the workspace."""
     # Check if name already exists
     existing = db.query(models.Employee).filter(
-        models.models.Employee.business_id == current_user["business_id"],
-        models.models.Employee.name == new_emp.name
+        models.Employee.business_id == current_user["business_id"],
+        models.Employee.name == new_emp.name
     ).first()
     
     if existing:
