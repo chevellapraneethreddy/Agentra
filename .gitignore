@@ -11,10 +11,10 @@ agentra.db-journal
 
 # Python
 backend/.venv/
-backend/__pycache__/
-backend/*.pyc
-backend/.pytest_cache/
-backend/app/services/integrations/__pycache__/
+__pycache__/
+*.pyc
+.pytest_cache/
+
 
 # Node
 frontend/node_modules/

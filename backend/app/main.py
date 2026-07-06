@@ -6,11 +6,15 @@ from app.core.database import engine, Base
 from app.api.api import api_router
 import logging
 
-# Ensure all database tables are created on server startup
-Base.metadata.create_all(bind=engine)
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentra")
+
+# Ensure all database tables are created on server startup
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as startup_db_err:
+    logger.error(f"Database table creation failed (SQLite read-only or unreachable DB): {str(startup_db_err)}")
+
 
 app = FastAPI(
     title="Agentra GaaS Core API",

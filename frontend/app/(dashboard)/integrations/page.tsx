@@ -245,7 +245,11 @@ export default function IntegrationsPage() {
       google_sheets: 'https://www.googleapis.com/auth/spreadsheets'
     }
     const scopes = encodeURIComponent(scopesMap[tool.tool_name] || '')
-    const redirect = encodeURIComponent('http://localhost:8000/api/v1/connections/oauth/callback')
+    let redirectUrl = 'http://localhost:8000/api/v1/connections/oauth/callback'
+    if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+      redirectUrl = `${window.location.origin}/api/v1/connections/oauth/callback`
+    }
+    const redirect = encodeURIComponent(redirectUrl)
     const state = encodeURIComponent(`${tool.tool_name}:${tool.business_id}`)
     
     return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${cid}&redirect_uri=${redirect}&response_type=code&scope=${scopes}&access_type=offline&prompt=consent&state=${state}`

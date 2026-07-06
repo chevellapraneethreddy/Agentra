@@ -12,3 +12,5 @@ google-genai>=0.1.0
 pypdf
 python-docx
 cryptography
+psycopg2-binary
+

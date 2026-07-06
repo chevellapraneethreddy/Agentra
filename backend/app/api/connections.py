@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
@@ -313,6 +313,7 @@ def disconnect_tool(
 def oauth_callback(
     code: str,
     state: str, # Usually contains the tool_name and business_id e.g. "gmail:biz_id"
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """Exchanges Google authorization code for OAuth tokens and stores them."""
@@ -326,7 +327,6 @@ def oauth_callback(
 
     # Call Google API oauth token exchange
     url = "https://oauth2.googleapis.com/token"
-    redirect_uri = "http://localhost:8000/api/v1/connections/oauth/callback"
     
     # 1. Fetch connection to extract user-configured credentials
     conn = db.query(models.ToolConnection).filter(
@@ -344,9 +344,17 @@ def oauth_callback(
     if not client_secret:
         client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "sandbox-secret")
 
-    # Call Google API oauth token exchange
-    url = "https://oauth2.googleapis.com/token"
-    redirect_uri = "http://localhost:8000/api/v1/connections/oauth/callback"
+    # Construct redirect URI dynamically to support both production (same-host Vercel routing) and dev environment
+    redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
+    if not redirect_uri:
+        # Dynamic proxy-aware URL builder
+        proto = request.headers.get("x-forwarded-proto", "http")
+        host = request.headers.get("x-forwarded-host", request.url.netloc)
+        # Check if local development
+        if "localhost" in host or "127.0.0.1" in host:
+            redirect_uri = "http://localhost:8000/api/v1/connections/oauth/callback"
+        else:
+            redirect_uri = f"{proto}://{host}/api/v1/connections/oauth/callback"
     
     payload = {
         "code": code,
