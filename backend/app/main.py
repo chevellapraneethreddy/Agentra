@@ -105,5 +105,65 @@ def startup_event():
                 logger.error(f"Background worker loop error: {str(e)}")
             time.sleep(15)
             
-    thread = threading.Thread(target=worker_loop, daemon=True)
-    thread.start()
+    import os
+    if not os.getenv("VERCEL"):
+        thread = threading.Thread(target=worker_loop, daemon=True)
+        thread.start()
+    else:
+        logger.info("Serverless environment detected (VERCEL). Background polling thread initialization skipped.")
+
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+
+@app.post("/api/v1/cron/sync", tags=["Cron"])
+@app.get("/api/v1/cron/sync", tags=["Cron"])
+def cron_sync(db: Session = Depends(get_db)):
+    """
+    On-demand cron sync endpoint for serverless environments.
+    Schedules email triggers, processes waiting workflows, triggers daily summaries at 8 AM, and polls Gmail.
+    """
+    from datetime import datetime
+    from app.services.integrations.gmail_workflows import GmailWorkflows
+    from app.services.workflow_engine import WorkflowEngine
+    from app.services.integrations.gmail_monitor import GmailMonitorService
+    from app.models import models
+    
+    logger.info("Cron sync endpoint triggered via Vercel Cron.")
+    results = {}
+    
+    # 1. Scheduled emails
+    try:
+        sent = GmailWorkflows.process_scheduled_emails(db)
+        results["scheduled_emails_sent"] = sent
+    except Exception as e:
+        results["scheduled_emails_error"] = str(e)
+        
+    # 2. Resumes waiting workflows
+    try:
+        WorkflowEngine.process_waiting_workflows(db)
+        results["waiting_workflows"] = "processed"
+    except Exception as e:
+        results["waiting_workflows_error"] = str(e)
+        
+    # 3. Daily summary check
+    try:
+        now = datetime.now()
+        if now.hour == 8:
+            businesses = db.query(models.Business).all()
+            for biz in businesses:
+                WorkflowEngine.run_workflow_event(db, biz.id, "schedule_8am", {})
+            results["daily_summary"] = "triggered"
+        else:
+            results["daily_summary"] = "skipped (not 8 AM hour)"
+    except Exception as e:
+        results["daily_summary_error"] = str(e)
+        
+    # 4. Gmail polling
+    try:
+        GmailMonitorService.poll_unread_emails_for_all_workspaces(db)
+        results["gmail_poll"] = "completed"
+    except Exception as e:
+        results["gmail_poll_error"] = str(e)
+        
+    return {"status": "completed", "details": results}

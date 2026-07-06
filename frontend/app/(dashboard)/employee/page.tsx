@@ -466,7 +466,7 @@ export default function EmployeePage() {
                       Decommission Worker
                     </Button>
                   ) : (
-                    <span className="text-[10px] text-zinc-600">Preset Operations Employee can't be deleted.</span>
+                    <span className="text-[10px] text-zinc-600">Preset Operations Employee can&apos;t be deleted.</span>
                   )}
 
                   <div className="flex gap-2">

@@ -269,3 +269,41 @@ def get_current_user(
         "full_name": full_name,
         "business_id": db_business.id
     }
+
+from cryptography.fernet import Fernet
+import os
+
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
+if not ENCRYPTION_KEY:
+    import hashlib
+    import base64
+    derived = hashlib.sha256(settings.SUPABASE_JWT_SECRET.encode()).digest()
+    ENCRYPTION_KEY = base64.urlsafe_b64encode(derived).decode()
+
+cipher_suite = Fernet(ENCRYPTION_KEY.encode())
+
+def encrypt_credentials(creds: dict) -> dict:
+    if not creds:
+        return creds
+    encrypted = {}
+    for k, v in creds.items():
+        if isinstance(v, str) and v != "sandbox" and len(v) > 5:
+            encrypted[k] = f"enc__{cipher_suite.encrypt(v.encode()).decode()}"
+        else:
+            encrypted[k] = v
+    return encrypted
+
+def decrypt_credentials(creds: dict) -> dict:
+    if not creds:
+        return creds
+    decrypted = {}
+    for k, v in creds.items():
+        if isinstance(v, str) and v.startswith("enc__"):
+            try:
+                raw_encrypted = v.split("enc__")[1]
+                decrypted[k] = cipher_suite.decrypt(raw_encrypted.encode()).decode()
+            except Exception:
+                decrypted[k] = v
+        else:
+            decrypted[k] = v
+    return decrypted

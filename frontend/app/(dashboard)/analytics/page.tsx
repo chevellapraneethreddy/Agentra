@@ -22,6 +22,19 @@ import {
   Target
 } from 'lucide-react'
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-zinc-950 border border-zinc-800 p-3 rounded-lg text-xs font-mono shadow-xl space-y-1">
+        <p className="text-zinc-400 font-sans font-semibold">Date: 2026-{label}</p>
+        <p className="text-blue-400">Executions: {payload[0].value}</p>
+        {payload[1] && <p className="text-amber-400">Saved: ${payload[1].value}</p>}
+      </div>
+    )
+  }
+  return null
+}
+
 export default function AnalyticsPage() {
   const { token } = useAuth()
   const [data, setData] = useState<any | null>(null)
@@ -55,20 +68,6 @@ export default function AnalyticsPage() {
         <div className="h-[50vh] bg-zinc-900 animate-pulse rounded-xl" />
       </div>
     )
-  }
-
-  // Custom tooltips for Recharts
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-zinc-950 border border-zinc-800 p-3 rounded-lg text-xs font-mono shadow-xl space-y-1">
-          <p className="text-zinc-400 font-sans font-semibold">Date: 2026-{label}</p>
-          <p className="text-blue-400">Executions: {payload[0].value}</p>
-          {payload[1] && <p className="text-amber-400">Saved: ${payload[1].value}</p>}
-        </div>
-      )
-    }
-    return null
   }
 
   return (

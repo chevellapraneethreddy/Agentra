@@ -200,8 +200,19 @@ class ToolConnection(Base):
     
     id = Column(String, primary_key=True, default=generate_uuid, index=True)
     business_id = Column(String, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
-    tool_name = Column(String, nullable=False) # whatsapp, gmail, google_calendar, google_sheets, slack
-    credentials = Column(JSON, nullable=False, default=dict)
+    tool_name = Column(String, nullable=False)
+    _credentials = Column("credentials", JSON, nullable=False, default=dict)
+    
+    @property
+    def credentials(self):
+        from app.core.security import decrypt_credentials
+        return decrypt_credentials(self._credentials)
+        
+    @credentials.setter
+    def credentials(self, val):
+        from app.core.security import encrypt_credentials
+        self._credentials = encrypt_credentials(val)
+
     is_connected = Column(Boolean, nullable=False, default=False)
     last_sync = Column(DateTime, nullable=True)
     logs = Column(JSON, nullable=False, default=list)

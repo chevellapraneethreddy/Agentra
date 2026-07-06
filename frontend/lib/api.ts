@@ -8,6 +8,10 @@ const getApiBaseUrl = () => {
       const backendHost = host.replace('-3005.', '-8000.').replace('3005-', '8000-')
       return `${window.location.protocol}//${backendHost}/api/v1`
     }
+    // Standard deployment same-host routing
+    if (!host.includes('localhost:3005') && !host.includes('127.0.0.1:3005')) {
+      return '/api/v1'
+    }
   }
   return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 }

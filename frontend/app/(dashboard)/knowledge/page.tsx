@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { FileText, Upload, PlusCircle, Trash, BookOpen, Search, Sparkles, FileSpreadsheet, Image, FileCode, CheckCircle2, AlertCircle } from 'lucide-react'
+import { FileText, Upload, PlusCircle, Trash, BookOpen, Search, Sparkles, FileSpreadsheet, Image as ImageIcon, FileCode, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function KnowledgePage() {
   const { token } = useAuth()
@@ -119,7 +119,7 @@ export default function KnowledgePage() {
     if (t === 'pdf') return <FileText className="text-red-400" size={16} />
     if (t === 'docx' || t === 'doc') return <FileText className="text-blue-400" size={16} />
     if (t === 'csv') return <FileSpreadsheet className="text-emerald-400" size={16} />
-    if (['png', 'jpg', 'jpeg', 'webp'].includes(t)) return <Image className="text-purple-400" size={16} />
+    if (['png', 'jpg', 'jpeg', 'webp'].includes(t)) return <ImageIcon className="text-purple-400" size={16} />
     return <FileCode className="text-zinc-400" size={16} />
   }
 
@@ -343,7 +343,7 @@ export default function KnowledgePage() {
                       </CardHeader>
                       <CardContent className="p-4">
                         <p className="text-xs text-zinc-300 leading-relaxed font-sans italic">
-                          "{res.text}"
+                          &ldquo;{res.text}&rdquo;
                         </p>
                       </CardContent>
                     </Card>
