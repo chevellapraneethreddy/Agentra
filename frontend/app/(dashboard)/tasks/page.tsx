@@ -13,12 +13,13 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<any[]>([])
   const [selectedTask, setSelectedTask] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reloading, setReloading] = useState(false)
   const [runningId, setRunningId] = useState<string | null>(null)
 
   const loadTasks = async (selectFirst = false) => {
     if (!token) return
     try {
-      setLoading(true)
+      setReloading(true)
       const data = await api.getTasks(token)
       setTasks(data)
       if (selectFirst && data.length > 0) {
@@ -31,6 +32,7 @@ export default function TasksPage() {
     } catch (err) {
       console.error('Error fetching tasks', err)
     } finally {
+      setReloading(false)
       setLoading(false)
     }
   }
@@ -90,10 +92,11 @@ export default function TasksPage() {
         <Button
           onClick={() => loadTasks(false)}
           variant="outline"
-          className="border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-900 self-start flex items-center gap-2"
+          disabled={reloading}
+          className="border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-900 self-start flex items-center gap-2 cursor-pointer disabled:opacity-50"
         >
-          <RefreshCw size={14} />
-          Reload
+          <RefreshCw size={14} className={reloading ? 'animate-spin' : ''} />
+          {reloading ? 'Reloading...' : 'Reload'}
         </Button>
       </div>
 
