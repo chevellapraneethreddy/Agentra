@@ -327,4 +327,53 @@ class WorkflowHistory(WorkflowHistoryBase):
     business_id: str
     created_at: datetime
 
+# Studio Prompt Schemas
+class StudioPromptBase(ORMModel):
+    name: str
+    description: Optional[str] = ""
+    category: str
+    system_prompt: str
+    goal: Optional[str] = ""
+    rules: List[str] = []
+    output_format: Optional[str] = ""
+    memory_enabled: bool = True
+    knowledge_enabled: bool = True
+    enabled_tools: List[str] = []
+    version: str = "1.0.0"
+    status: str = "draft"
+
+class StudioPromptCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    category: str
+    system_prompt: str
+    goal: Optional[str] = ""
+    rules: List[str] = []
+    output_format: Optional[str] = ""
+    memory_enabled: bool = True
+    knowledge_enabled: bool = True
+    enabled_tools: List[str] = []
+    version: str = "1.0.0"
+    status: str = "draft"
+
+class StudioPromptUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    system_prompt: Optional[str] = None
+    goal: Optional[str] = None
+    rules: Optional[List[str]] = None
+    output_format: Optional[str] = None
+    memory_enabled: Optional[bool] = None
+    knowledge_enabled: Optional[bool] = None
+    enabled_tools: Optional[List[str]] = None
+    version: Optional[str] = None
+    status: Optional[str] = None
+
+class StudioPrompt(StudioPromptBase):
+    id: str
+    business_id: str
+    created_at: datetime
+    updated_at: datetime
+
 

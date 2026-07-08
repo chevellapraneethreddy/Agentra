@@ -14,7 +14,8 @@ ENDPOINTS = [
     ("/api/v1/connections/", "Integrations connections GET"),
     ("/api/v1/memory/", "Reflective memories GET"),
     ("/api/v1/workflows/", "AI Workflows Config GET"),
-    ("/api/v1/workflows/history", "AI Workflows History GET")
+    ("/api/v1/workflows/history", "AI Workflows History GET"),
+    ("/api/v1/prompts/", "Prompt Studio List GET")
 ]
 
 def run_tests():

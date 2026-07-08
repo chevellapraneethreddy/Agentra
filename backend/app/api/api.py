@@ -11,7 +11,8 @@ from app.api import (
     invoices,
     connections,
     memory,
-    workflows
+    workflows,
+    prompt_studio
 )
 
 api_router = APIRouter()
@@ -28,6 +29,7 @@ api_router.include_router(invoices.router, prefix="/invoices", tags=["Invoices"]
 api_router.include_router(connections.router, prefix="/connections", tags=["Tool Connections"])
 api_router.include_router(memory.router, prefix="/memory", tags=["AI Memory"])
 api_router.include_router(workflows.router, prefix="/workflows", tags=["AI Workflows"])
+api_router.include_router(prompt_studio.router, prefix="/prompts", tags=["Prompt Studio"])
 
 @api_router.get("/health", tags=["Health"])
 def health_check():

@@ -179,3 +179,24 @@ CREATE INDEX IF NOT EXISTS idx_tasks_business ON tasks(business_id);
 CREATE INDEX IF NOT EXISTS idx_activities_business ON activities(business_id);
 CREATE INDEX IF NOT EXISTS idx_processed_emails_id ON processed_emails(email_id);
 CREATE INDEX IF NOT EXISTS idx_document_chunks_doc ON document_chunks(document_id);
+
+CREATE TABLE IF NOT EXISTS studio_prompts (
+    id VARCHAR(255) PRIMARY KEY,
+    business_id VARCHAR(255) NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT DEFAULT '',
+    category VARCHAR(255) NOT NULL,
+    system_prompt TEXT NOT NULL,
+    goal TEXT DEFAULT '',
+    rules JSONB NOT NULL DEFAULT '[]'::jsonb,
+    output_format TEXT DEFAULT '',
+    memory_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    knowledge_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    enabled_tools JSONB NOT NULL DEFAULT '[]'::jsonb,
+    version VARCHAR(50) NOT NULL DEFAULT '1.0.0',
+    status VARCHAR(50) NOT NULL DEFAULT 'draft',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_studio_prompts_business ON studio_prompts(business_id);

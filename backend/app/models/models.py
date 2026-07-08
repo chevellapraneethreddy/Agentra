@@ -292,3 +292,23 @@ class ProcessedEmail(Base):
     id = Column(String, primary_key=True, index=True)
     business_id = Column(String, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
     processed_at = Column(DateTime, default=datetime.utcnow)
+
+class StudioPrompt(Base):
+    __tablename__ = "studio_prompts"
+    
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    business_id = Column(String, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(String, default="")
+    category = Column(String, nullable=False)
+    system_prompt = Column(String, nullable=False)
+    goal = Column(String, default="")
+    rules = Column(JSON, nullable=False, default=list)
+    output_format = Column(String, default="")
+    memory_enabled = Column(Boolean, default=True)
+    knowledge_enabled = Column(Boolean, default=True)
+    enabled_tools = Column(JSON, nullable=False, default=list)
+    version = Column(String, nullable=False, default="1.0.0")
+    status = Column(String, nullable=False, default="draft")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

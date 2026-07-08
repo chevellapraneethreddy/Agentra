@@ -223,4 +223,18 @@ export const api = {
     apiCall('/memory/', { token }),
   deleteMemory: (memoryId: string, token: string | null) =>
     apiCall(`/memory/${memoryId}`, { token, method: 'DELETE' }),
+
+  // Prompt Studio API
+  getPrompts: (token: string | null) =>
+    apiCall('/prompts/', { token }),
+  getPrompt: (promptId: string, token: string | null) =>
+    apiCall(`/prompts/${promptId}`, { token }),
+  createPrompt: (payload: any, token: string | null) =>
+    apiCall('/prompts/', { token, method: 'POST', body: JSON.stringify(payload) }),
+  updatePrompt: (promptId: string, payload: any, token: string | null) =>
+    apiCall(`/prompts/${promptId}`, { token, method: 'PUT', body: JSON.stringify(payload) }),
+  duplicatePrompt: (promptId: string, token: string | null) =>
+    apiCall(`/prompts/${promptId}/duplicate`, { token, method: 'POST' }),
+  deletePrompt: (promptId: string, token: string | null) =>
+    apiCall(`/prompts/${promptId}`, { token, method: 'DELETE' }),
 }

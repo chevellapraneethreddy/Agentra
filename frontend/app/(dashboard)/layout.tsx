@@ -20,7 +20,8 @@ import {
   ChevronRight,
   User,
   Radio,
-  Plug
+  Plug,
+  Terminal
 } from 'lucide-react'
 import { api } from '@/lib/api'
 
@@ -36,6 +37,7 @@ const navItems: NavItem[] = [
   { name: 'Inventory', href: '/inventory', icon: Package },
   { name: 'Tasks', href: '/tasks', icon: Activity },
   { name: 'AI Employee', href: '/employee', icon: Bot },
+  { name: 'Prompt Studio', href: '/prompts', icon: Terminal },
   { name: 'Knowledge', href: '/knowledge', icon: Database },
   { name: 'Integrations', href: '/integrations', icon: Plug },
   { name: 'Automation', href: '/automation', icon: Radio },
