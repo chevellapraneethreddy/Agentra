@@ -21,31 +21,76 @@ import Link from 'next/link'
 
 export default function DashboardPage() {
   const { token } = useAuth()
-  const [orders, setOrders] = useState<any[]>([])
-  const [inventory, setInventory] = useState<any[]>([])
-  const [analytics, setAnalytics] = useState<any | null>(null)
-  const [tasks, setTasks] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const c = sessionStorage.getItem('agentra_cache_orders')
+      return c ? JSON.parse(c) : []
+    }
+    return []
+  })
+  const [inventory, setInventory] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const c = sessionStorage.getItem('agentra_cache_inventory')
+      return c ? JSON.parse(c) : []
+    }
+    return []
+  })
+  const [analytics, setAnalytics] = useState<any | null>(() => {
+    if (typeof window !== 'undefined') {
+      const c = sessionStorage.getItem('agentra_cache_analytics')
+      return c ? JSON.parse(c) : null
+    }
+    return null
+  })
+  const [tasks, setTasks] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const c = sessionStorage.getItem('agentra_cache_tasks')
+      return c ? JSON.parse(c) : []
+    }
+    return []
+  })
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('agentra_cache_analytics')
+    }
+    return true
+  })
   const [triggering, setTriggering] = useState(false)
 
   const loadDashboardData = async () => {
     if (!token) return
+    const start = performance.now()
     try {
-      setLoading(true)
       const [ordersData, inventoryData, analyticsData, tasksData] = await Promise.all([
         api.getOrders(token),
         api.getInventory(token),
         api.getAnalytics(token),
         api.getTasks(token)
       ])
-      setOrders(ordersData.slice(0, 3)) // Show top 3 recent
+      const apiDuration = performance.now() - start
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Profiling] Dashboard API response time: ${apiDuration.toFixed(2)}ms`)
+      }
+
+      const recentOrders = ordersData.slice(0, 3)
+      setOrders(recentOrders)
       setInventory(inventoryData)
       setAnalytics(analyticsData)
       setTasks(tasksData)
+
+      // Update sessionStorage caches
+      sessionStorage.setItem('agentra_cache_orders', JSON.stringify(recentOrders))
+      sessionStorage.setItem('agentra_cache_inventory', JSON.stringify(inventoryData))
+      sessionStorage.setItem('agentra_cache_analytics', JSON.stringify(analyticsData))
+      sessionStorage.setItem('agentra_cache_tasks', JSON.stringify(tasksData))
     } catch (err) {
       console.error('Error loading dashboard data', err)
     } finally {
       setLoading(false)
+      const totalDuration = performance.now() - start
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Profiling] Dashboard render/hydration time: ${totalDuration.toFixed(2)}ms`)
+      }
     }
   }
 

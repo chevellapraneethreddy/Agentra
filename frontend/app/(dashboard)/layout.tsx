@@ -56,8 +56,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [agentStatus, setAgentStatus] = useState<'idle' | 'running' | 'paused'>('idle')
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
 
-  const [onboardingChecked, setOnboardingChecked] = useState(false)
-  const [hasProvider, setHasProvider] = useState(true)
+  const [onboardingChecked, setOnboardingChecked] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('agentra_onboarding_completed') === 'true'
+    }
+    return false
+  })
+  const [hasProvider, setHasProvider] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('agentra_has_provider') !== 'false'
+    }
+    return true
+  })
 
   useEffect(() => {
     if (!loading && !user) {
@@ -68,21 +78,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Fetch onboarding state and AI provider configuration status on mount
   useEffect(() => {
     if (!token || loading || !user) return
+    const start = performance.now()
     const checkOnboardingAndProviders = async () => {
       try {
-        const biz = await api.getMyBusiness(token)
+        const [biz, providers] = await Promise.all([
+          api.getMyBusiness(token),
+          api.getProviders(token)
+        ])
+        const apiDuration = performance.now() - start
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[Profiling] Workspace initialization API response time: ${apiDuration.toFixed(2)}ms`)
+        }
+
         if (!biz.onboarding_completed) {
           router.replace('/onboarding')
           return
         }
+        
+        sessionStorage.setItem('agentra_onboarding_completed', 'true')
         setOnboardingChecked(true)
 
-        const providers = await api.getProviders(token)
         const active = providers.some((p: any) => p.is_active)
+        sessionStorage.setItem('agentra_has_provider', active ? 'true' : 'false')
         setHasProvider(active)
       } catch (err) {
         console.error('Error verifying onboarding or provider configurations:', err)
         setOnboardingChecked(true) // Bypass on failures to avoid complete workspace blockages
+      } finally {
+        const totalDuration = performance.now() - start
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[Profiling] Workspace initialization total time: ${totalDuration.toFixed(2)}ms`)
+        }
       }
     }
     checkOnboardingAndProviders()
@@ -95,12 +121,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       try {
         const list = await api.getEmployees(token)
         const ops = list.find((e: any) => e.name === 'Operations Employee') || list[0]
-        setAgentStatus(ops?.status || 'idle')
+        const status = ops?.status || 'idle'
+        setAgentStatus(status)
+        sessionStorage.setItem('agentra_agent_status', status)
       } catch (err) {
         console.error('Failed to load agent status in layout', err)
       }
     }
-    fetchStatus()
+    
+    const cachedStatus = sessionStorage.getItem('agentra_agent_status')
+    if (cachedStatus) {
+      setAgentStatus(cachedStatus as any)
+    } else {
+      fetchStatus()
+    }
+    
     const interval = setInterval(fetchStatus, 15000)
     return () => clearInterval(interval)
   }, [token, onboardingChecked])

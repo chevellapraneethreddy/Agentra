@@ -217,6 +217,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     setLoading(true)
     try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('agentra_onboarding_completed')
+        sessionStorage.removeItem('agentra_has_provider')
+        sessionStorage.removeItem('agentra_agent_status')
+        sessionStorage.removeItem('agentra_cache_orders')
+        sessionStorage.removeItem('agentra_cache_inventory')
+        sessionStorage.removeItem('agentra_cache_analytics')
+        sessionStorage.removeItem('agentra_cache_tasks')
+      }
+
       if (!isSupabaseConfigured()) {
         setUser(null)
         setToken(null)
