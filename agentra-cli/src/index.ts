@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { parseCliArgs } from './cli';
+import { parseCliArgs } from './cli.js';
 
 // Execute arguments parsing
 parseCliArgs(process.argv).catch((err) => {

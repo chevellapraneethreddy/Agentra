@@ -237,4 +237,22 @@ export const api = {
     apiCall(`/prompts/${promptId}/duplicate`, { token, method: 'POST' }),
   deletePrompt: (promptId: string, token: string | null) =>
     apiCall(`/prompts/${promptId}`, { token, method: 'DELETE' }),
+
+  // Onboarding & Business API
+  getMyBusiness: (token: string | null) =>
+    apiCall('/business/me', { token }),
+  updateMyBusiness: (payload: any, token: string | null) =>
+    apiCall('/business/me', { token, method: 'PUT', body: JSON.stringify(payload) }),
+
+  // AI Providers API
+  getProviders: (token: string | null) =>
+    apiCall('/providers/', { token }),
+  connectProvider: (payload: any, token: string | null) =>
+    apiCall('/providers/', { token, method: 'POST', body: JSON.stringify(payload) }),
+  testProviderConnection: (payload: any, token: string | null) =>
+    apiCall('/providers/test', { token, method: 'POST', body: JSON.stringify(payload) }),
+  makeDefaultProvider: (providerId: string, token: string | null) =>
+    apiCall(`/providers/${providerId}/default`, { token, method: 'POST' }),
+  disconnectProvider: (providerId: string, token: string | null) =>
+    apiCall(`/providers/${providerId}`, { token, method: 'DELETE' }),
 }

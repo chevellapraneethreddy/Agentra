@@ -2,10 +2,11 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
 import os from 'os';
+import axios from 'axios';
 import { exec } from 'child_process';
-import { readConfig, writeConfig } from '../config';
-import { loginFlow } from '../auth';
-import * as commands from '../commands';
+import { readConfig, writeConfig } from '../config/index.js';
+import { loginFlow } from '../auth/index.js';
+import * as commands from '../commands/index.js';
 
 export async function checkAndRunOnboarding(): Promise<void> {
   const config = readConfig();
@@ -261,7 +262,6 @@ function runDoctorDiagnostic(): void {
 
 // Helper getter
 function getApiClient() {
-  const axios = require('axios');
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const token = readConfig().token;
   if (token) {

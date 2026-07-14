@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { readConfig } from '../config';
+import { readConfig } from '../config/index.js';
 
 export function getApiClient(): AxiosInstance {
   const config = readConfig();

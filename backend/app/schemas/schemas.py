@@ -17,9 +17,14 @@ class UserProfile(ORMModel):
 # Business Schemas
 class BusinessBase(ORMModel):
     name: str
+    onboarding_completed: bool = False
 
 class BusinessCreate(BusinessBase):
     pass
+
+class BusinessUpdate(BaseModel):
+    name: Optional[str] = None
+    onboarding_completed: Optional[bool] = None
 
 class Business(BusinessBase):
     id: str
@@ -371,6 +376,32 @@ class StudioPromptUpdate(BaseModel):
     status: Optional[str] = None
 
 class StudioPrompt(StudioPromptBase):
+    id: str
+    business_id: str
+    created_at: datetime
+    updated_at: datetime
+
+# Business AI Provider Schemas
+class BusinessAIProviderBase(ORMModel):
+    provider_name: str
+    default_model: str
+    is_active: bool = False
+    is_default: bool = False
+
+class BusinessAIProviderCreate(BaseModel):
+    provider_name: str
+    api_key: Optional[str] = None
+    default_model: str
+    is_active: bool = False
+    is_default: bool = False
+
+class BusinessAIProviderUpdate(BaseModel):
+    api_key: Optional[str] = None
+    default_model: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_default: Optional[bool] = None
+
+class BusinessAIProvider(BusinessAIProviderBase):
     id: str
     business_id: str
     created_at: datetime

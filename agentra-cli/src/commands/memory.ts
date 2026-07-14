@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { getApiClient } from '../api';
+import { getApiClient } from '../api/index.js';
 
 export namespace Memory {
   export async function search(query: string): Promise<void> {

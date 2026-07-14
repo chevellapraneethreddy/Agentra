@@ -2,6 +2,7 @@
   "name": "@agentra/cli",
   "version": "0.1.0",
   "description": "Agentra Generative AI as a Service CLI",
+  "type": "module",
   "main": "dist/index.js",
   "bin": {
     "agentra": "./bin/agentra.js"
@@ -9,8 +10,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node bin/agentra.js",
-    "dev": "ts-node src/index.ts",
-    "prepare": "npm run build"
+    "dev": "ts-node-esm src/index.ts",
+    "prepare": "npm run build",
+    "test": "node test/cli.test.js"
   },
   "dependencies": {
     "axios": "^1.6.8",

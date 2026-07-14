@@ -200,3 +200,19 @@ CREATE TABLE IF NOT EXISTS studio_prompts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_studio_prompts_business ON studio_prompts(business_id);
+
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS business_ai_providers (
+    id VARCHAR(255) PRIMARY KEY,
+    business_id VARCHAR(255) NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    provider_name VARCHAR(100) NOT NULL,
+    api_key TEXT,
+    default_model VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT FALSE,
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_business_ai_providers_business ON business_ai_providers(business_id);

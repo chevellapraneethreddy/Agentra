@@ -1,14 +1,14 @@
 import chalk from 'chalk';
 import ora from 'ora';
 
-export * from './login';
-export * from './init';
-export * from './employee';
-export * from './workflow';
-export * from './prompt';
-export * from './knowledge';
-export * from './memory';
-export * from './version';
+export * from './login.js';
+export * from './init.js';
+export * from './employee.js';
+export * from './workflow.js';
+export * from './prompt.js';
+export * from './knowledge.js';
+export * from './memory.js';
+export * from './version.js';
 
 export function chatCommand(message: string): void {
   console.log(chalk.blue(`\n[Chat Mode]: Sending message to AI Workforce...`));

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Database, Trash2, Key, Receipt, Trash, MessageSquare, Mail, Calendar as CalendarIcon, FileSpreadsheet, Send, ShieldAlert } from 'lucide-react'
+import { Database, Trash2, Key, Receipt, Trash, MessageSquare, Mail, Calendar as CalendarIcon, FileSpreadsheet, Send, ShieldAlert, AlertCircle } from 'lucide-react'
 
 interface ToolItem {
   id: string
@@ -81,6 +81,122 @@ const INTEGRATION_TOOLS: ToolItem[] = [
 export default function SettingsPage() {
   const { user, token, signOut } = useAuth()
   
+  // AI Providers metadata
+  const PROVIDER_METADATA: Record<string, { name: string; defaultModel: string; models: string[]; placeholder: string }> = {
+    openai: { name: 'OpenAI', defaultModel: 'gpt-4o', models: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'], placeholder: 'sk-...' },
+    anthropic: { name: 'Anthropic Claude', defaultModel: 'claude-3-5-sonnet', models: ['claude-3-5-sonnet', 'claude-3-opus', 'claude-3-haiku'], placeholder: 'sk-ant-...' },
+    gemini: { name: 'Google Gemini', defaultModel: 'gemini-1.5-pro', models: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro'], placeholder: 'AIzaSy...' },
+    openrouter: { name: 'OpenRouter', defaultModel: 'meta-llama/llama-3-70b-instruct', models: ['meta-llama/llama-3-70b-instruct', 'anthropic/claude-3.5-sonnet', 'openai/gpt-4o', 'google/gemini-flash-1.5'], placeholder: 'sk-or-...' },
+    ollama: { name: 'Ollama (Local LLM)', defaultModel: 'llama3', models: ['llama3', 'mistral', 'phi3', 'gemma'], placeholder: 'http://localhost:11434' }
+  }
+
+  // AI Providers states
+  const [providers, setProviders] = useState<any[]>([])
+  const [loadingProviders, setLoadingProviders] = useState(true)
+  const [providerKeys, setProviderKeys] = useState<Record<string, string>>({})
+  const [providerModels, setProviderModels] = useState<Record<string, string>>({})
+  const [testingProvider, setTestingProvider] = useState<Record<string, boolean>>({})
+  const [testingResult, setTestingResult] = useState<Record<string, any>>({})
+  const [connectingProvider, setConnectingProvider] = useState<Record<string, boolean>>({})
+
+  const loadProviders = async () => {
+    if (!token) return
+    try {
+      setLoadingProviders(true)
+      const data = await api.getProviders(token)
+      setProviders(data)
+      
+      const modelMap: Record<string, string> = {}
+      data.forEach((p: any) => {
+        modelMap[p.provider_name] = p.default_model
+      })
+      setProviderModels(prev => ({ ...prev, ...modelMap }))
+    } catch (err) {
+      console.error('Failed to load AI providers settings', err)
+    } finally {
+      setLoadingProviders(false)
+    }
+  }
+
+  const handleTestProvider = async (providerName: string) => {
+    if (!token) return
+    const key = providerKeys[providerName] || ''
+    const model = providerModels[providerName] || PROVIDER_METADATA[providerName]?.defaultModel || ''
+    
+    if (!key.trim()) {
+      alert('API Key is required to test.')
+      return
+    }
+    
+    setTestingProvider(prev => ({ ...prev, [providerName]: true }))
+    setTestingResult(prev => ({ ...prev, [providerName]: null }))
+    
+    try {
+      const res = await api.testProviderConnection({
+        provider_name: providerName,
+        api_key: key,
+        model_name: model
+      }, token)
+      setTestingResult(prev => ({ ...prev, [providerName]: res }))
+    } catch (err: any) {
+      setTestingResult(prev => ({ ...prev, [providerName]: { success: false, message: err.message || 'Network error.' } }))
+    } finally {
+      setTestingProvider(prev => ({ ...prev, [providerName]: false }))
+    }
+  }
+
+  const handleConnectProvider = async (providerName: string) => {
+    if (!token) return
+    const key = providerKeys[providerName] || ''
+    const model = providerModels[providerName] || PROVIDER_METADATA[providerName]?.defaultModel || ''
+    
+    if (!key.trim()) {
+      alert('API Key is required to connect.')
+      return
+    }
+    
+    setConnectingProvider(prev => ({ ...prev, [providerName]: true }))
+    try {
+      const res = await api.connectProvider({
+        provider_name: providerName,
+        api_key: key,
+        default_model: model,
+        is_active: true,
+        is_default: providers.length === 0
+      }, token)
+      if (res.id) {
+        alert(`${PROVIDER_METADATA[providerName]?.name || providerName} connected successfully!`)
+        setProviderKeys(prev => ({ ...prev, [providerName]: '' }))
+        setTestingResult(prev => ({ ...prev, [providerName]: null }))
+        await loadProviders()
+      }
+    } catch (err) {
+      console.error('Failed to save provider config:', err)
+    } finally {
+      setConnectingProvider(prev => ({ ...prev, [providerName]: false }))
+    }
+  }
+
+  const handleMakeDefaultProvider = async (providerId: string) => {
+    if (!token) return
+    try {
+      await api.makeDefaultProvider(providerId, token)
+      await loadProviders()
+    } catch (err) {
+      console.error('Failed setting default provider:', err)
+    }
+  }
+
+  const handleDisconnectProvider = async (providerId: string) => {
+    if (!token || !confirm('Are you sure you want to disconnect this AI Provider?')) return
+    try {
+      await api.disconnectProvider(providerId, token)
+      await loadProviders()
+    } catch (err) {
+      console.error('Failed deleting provider:', err)
+    }
+  }
+
   // Settings configurations
   const [supabaseUrl, setSupabaseUrl] = useState('')
   const [supabaseKey, setSupabaseKey] = useState('')
@@ -136,6 +252,7 @@ export default function SettingsPage() {
     setIsConfigured(isSupabaseConfigured())
     loadInvoices()
     loadConnections()
+    loadProviders()
   }, [token])
 
   const handleClearSandbox = () => {
@@ -242,6 +359,7 @@ export default function SettingsPage() {
             <TabsTrigger value="general" className="text-xs px-4 py-2 font-semibold">General Settings</TabsTrigger>
             <TabsTrigger value="connections" className="text-xs px-4 py-2 font-semibold">Connected Tools</TabsTrigger>
             <TabsTrigger value="invoices" className="text-xs px-4 py-2 font-semibold">Invoices Ledger</TabsTrigger>
+            <TabsTrigger value="ai_providers" className="text-xs px-4 py-2 font-semibold">AI Providers</TabsTrigger>
           </TabsList>
         </div>
 
@@ -579,6 +697,158 @@ export default function SettingsPage() {
                     ))}
                   </TableBody>
                 </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ai_providers" className="mt-6 space-y-6">
+          <Card className="bg-zinc-900/20 border-zinc-800/80 backdrop-blur-xl">
+            <CardHeader>
+              <CardTitle className="text-white text-base">AI Engine Providers Settings</CardTitle>
+              <CardDescription>
+                Configure credentials, API keys, and models for your reasoning engines. Agentra runs LLM-agnostically.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {loadingProviders ? (
+                <div className="py-12 text-center">
+                  <span className="inline-block h-6 w-6 animate-spin rounded-full border border-primary border-t-transparent" />
+                </div>
+              ) : (
+                <div className="grid gap-6">
+                  {Object.keys(PROVIDER_METADATA).map(providerKey => {
+                    const meta = PROVIDER_METADATA[providerKey]
+                    const dbProvider = providers.find(p => p.provider_name === providerKey)
+                    const isConnected = !!dbProvider
+                    const isDefault = dbProvider?.is_default
+                    
+                    const currentModel = providerModels[providerKey] || meta.defaultModel
+                    const currentKey = providerKeys[providerKey] || ''
+                    const result = testingResult[providerKey]
+                    const isTesting = !!testingProvider[providerKey]
+                    const isConnecting = !!connectingProvider[providerKey]
+                    
+                    return (
+                      <div 
+                        key={providerKey}
+                        className="border border-zinc-800/80 rounded-xl p-5 bg-zinc-950/40 hover:border-zinc-700/80 transition-all duration-200 space-y-4"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-900 pb-3">
+                          <div>
+                            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                              {meta.name}
+                            </h4>
+                            <p className="text-[10px] text-zinc-500 font-mono mt-0.5">Key: {meta.placeholder}</p>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {isConnected ? (
+                              <>
+                                <Badge className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[10px]">CONNECTED</Badge>
+                                {isDefault && (
+                                  <Badge className="bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-[10px]">DEFAULT</Badge>
+                                )}
+                              </>
+                            ) : (
+                              <Badge className="bg-zinc-800 border-zinc-700 text-zinc-500 font-mono text-[10px]">NOT CONNECTED</Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">
+                              {isConnected ? 'UPDATE API KEY (OPTIONAL)' : 'API KEY'}
+                            </label>
+                            <Input
+                              type="password"
+                              value={currentKey}
+                              onChange={e => setProviderKeys(prev => ({ ...prev, [providerKey]: e.target.value }))}
+                              placeholder={isConnected ? '••••••••••••••••' : meta.placeholder}
+                              className="bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder-zinc-650 focus-visible:ring-blue-500 text-xs h-9"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">MODEL</label>
+                            <select
+                              value={currentModel}
+                              onChange={e => setProviderModels(prev => ({ ...prev, [providerKey]: e.target.value }))}
+                              className="w-full bg-zinc-900/60 border border-zinc-800 text-zinc-350 text-xs rounded-lg h-9 px-3 outline-none focus:border-zinc-700"
+                            >
+                              {meta.models.map(m => (
+                                <option key={m} value={m}>{m}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {result && (
+                          <div className={`border rounded-lg p-2.5 flex gap-2 items-start text-[11px] ${
+                            result.success 
+                              ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400 font-mono' 
+                              : 'border-red-500/20 bg-red-500/5 text-red-400 font-mono'
+                          }`}>
+                            <AlertCircle size={12} className="mt-0.5" />
+                            <span>{result.message}</span>
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              disabled={isTesting || (!currentKey.trim() && !isConnected)}
+                              onClick={() => handleTestProvider(providerKey)}
+                              className="border-zinc-850 text-zinc-300 hover:text-white hover:bg-zinc-900 text-xs cursor-pointer disabled:opacity-50"
+                            >
+                              {isTesting ? 'Testing...' : 'Test Connection'}
+                            </Button>
+                            
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={isConnecting || (!currentKey.trim() && !isConnected)}
+                              onClick={() => handleConnectProvider(providerKey)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white text-xs cursor-pointer disabled:opacity-50"
+                            >
+                              {isConnecting ? 'Connecting...' : isConnected ? 'Update Settings' : 'Connect Provider'}
+                            </Button>
+                          </div>
+
+                          {isConnected && (
+                            <div className="flex gap-2">
+                              {!isDefault && (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleMakeDefaultProvider(dbProvider.id)}
+                                  className="border-zinc-850 text-zinc-300 hover:text-white hover:bg-zinc-900 text-xs cursor-pointer"
+                                >
+                                  Make Default
+                                </Button>
+                              )}
+                              
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDisconnectProvider(dbProvider.id)}
+                                className="border-zinc-850 text-red-400 hover:text-white hover:bg-red-950/20 text-xs cursor-pointer"
+                              >
+                                Disconnect
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               )}
             </CardContent>
           </Card>

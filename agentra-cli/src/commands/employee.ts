@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { getApiClient } from '../api';
+import { getApiClient } from '../api/index.js';
 
 export namespace Employee {
   export async function create(name: string, role: string): Promise<void> {

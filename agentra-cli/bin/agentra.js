@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-// Launch the compiled CLI TypeScript application
-require('../dist/index.js');
+// Launch the compiled CLI ESModule index file
+import '../dist/index.js';

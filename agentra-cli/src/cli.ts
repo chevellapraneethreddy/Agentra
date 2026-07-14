@@ -1,14 +1,18 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { loginCommand } from './commands/login';
-import { initCommand } from './commands/init';
-import { Employee } from './commands/employee';
-import { Workflow } from './commands/workflow';
-import { Prompt } from './commands/prompt';
-import { Knowledge } from './commands/knowledge';
-import { Memory } from './commands/memory';
-import { versionCommand } from './commands/version';
-import { checkAndRunOnboarding } from './terminal/shell';
+import os from 'os';
+import ora from 'ora';
+import { readConfig, writeConfig } from './config/index.js';
+import { loginCommand } from './commands/login.js';
+import { initCommand } from './commands/init.js';
+import { Employee } from './commands/employee.js';
+import { Workflow } from './commands/workflow.js';
+import { Prompt } from './commands/prompt.js';
+import { Knowledge } from './commands/knowledge.js';
+import { Memory } from './commands/memory.js';
+import { versionCommand } from './commands/version.js';
+import { doctorCommand } from './commands/doctor.js';
+import { checkAndRunOnboarding } from './terminal/shell.js';
 
 export const program = new Command();
 
@@ -34,7 +38,6 @@ program
   .command('logout')
   .description('Log out of the Agentra workspace and clear credentials locally')
   .action(() => {
-    const { writeConfig } = require('./config');
     writeConfig({ token: null, email: null, businessId: null });
     console.log(chalk.yellow('Logged out successfully. Configuration session cleared.'));
   });
@@ -157,7 +160,7 @@ program
   .command('deploy')
   .description('Deploy local agent workspaces templates configuration to Agentra Cloud')
   .action(() => {
-    const spinner = require('ora')('Bundling agent workspace config templates...').start();
+    const spinner = ora('Bundling agent workspace config templates...').start();
     setTimeout(() => {
       spinner.text = 'Uploading code and templates to Agentra Cloud...';
       setTimeout(() => {
@@ -180,7 +183,6 @@ program
   .command('config')
   .description('Display saved CLI config settings')
   .action(() => {
-    const { readConfig } = require('./config');
     console.log(chalk.gray('Current CLI configurations:'));
     console.log(JSON.stringify(readConfig(), null, 2));
   });
@@ -189,17 +191,8 @@ program
 program
   .command('doctor')
   .description('Run local project workspace diagnostic checks')
-  .action(() => {
-    const os = require('os');
-    const { readConfig } = require('./config');
-    console.log(chalk.blue('\n=== Running Workspace Diagnostic Checks ===\n'));
-    console.log(`- Operating System: ${chalk.green(os.platform())}`);
-    console.log(`- Node.js Version: ${chalk.green(process.version)}`);
-    const config = readConfig();
-    console.log(`- Backend Endpoint: ${chalk.green(config.backendUrl)}`);
-    console.log(`- Local Token: ${chalk.green(config.token ? 'Configured' : 'Missing')}`);
-    console.log(`- Business Environment: ${chalk.green(config.businessId ? 'Connected' : 'Disconnected')}`);
-    console.log(chalk.green.bold('\n✔ Diagnostic complete. Workspace is healthy.\n'));
+  .action(async () => {
+    await doctorCommand();
   });
 
 // Update Command

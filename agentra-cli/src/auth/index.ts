@@ -1,8 +1,8 @@
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
-import { getApiClient } from '../api';
-import { writeConfig } from '../config';
+import { getApiClient } from '../api/index.js';
+import { writeConfig } from '../config/index.js';
 
 export async function loginFlow(): Promise<void> {
   console.log(chalk.blue.bold('\n=== Agentra CLI Login ===\n'));

@@ -38,6 +38,8 @@ class Business(Base):
     documents = relationship("KnowledgeDocument", back_populates="business", cascade="all, delete-orphan")
     tool_connections = relationship("ToolConnection", back_populates="business", cascade="all, delete-orphan")
     memories = relationship("Memory", back_populates="business", cascade="all, delete-orphan")
+    onboarding_completed = Column(Boolean, default=False, nullable=False)
+    ai_providers = relationship("BusinessAIProvider", back_populates="business", cascade="all, delete-orphan")
 
 class Employee(Base):
     __tablename__ = "employees"
@@ -312,3 +314,18 @@ class StudioPrompt(Base):
     status = Column(String, nullable=False, default="draft")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class BusinessAIProvider(Base):
+    __tablename__ = "business_ai_providers"
+    
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    business_id = Column(String, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+    provider_name = Column(String, nullable=False)
+    api_key = Column(String, nullable=True)
+    default_model = Column(String, nullable=False)
+    is_active = Column(Boolean, default=False)
+    is_default = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    business = relationship("Business", back_populates="ai_providers")

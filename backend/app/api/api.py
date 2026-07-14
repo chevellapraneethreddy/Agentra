@@ -12,7 +12,9 @@ from app.api import (
     connections,
     memory,
     workflows,
-    prompt_studio
+    prompt_studio,
+    business,
+    providers
 )
 
 api_router = APIRouter()
@@ -30,6 +32,8 @@ api_router.include_router(connections.router, prefix="/connections", tags=["Tool
 api_router.include_router(memory.router, prefix="/memory", tags=["AI Memory"])
 api_router.include_router(workflows.router, prefix="/workflows", tags=["AI Workflows"])
 api_router.include_router(prompt_studio.router, prefix="/prompts", tags=["Prompt Studio"])
+api_router.include_router(business.router, prefix="/business", tags=["Business Environment"])
+api_router.include_router(providers.router, prefix="/providers", tags=["AI Providers"])
 
 @api_router.get("/health", tags=["Health"])
 def health_check():

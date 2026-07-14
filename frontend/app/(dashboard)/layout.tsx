@@ -21,7 +21,8 @@ import {
   User,
   Radio,
   Plug,
-  Terminal
+  Terminal,
+  AlertCircle
 } from 'lucide-react'
 import { api } from '@/lib/api'
 
@@ -54,15 +55,41 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [agentStatus, setAgentStatus] = useState<'idle' | 'running' | 'paused'>('idle')
 
+  const [onboardingChecked, setOnboardingChecked] = useState(false)
+  const [hasProvider, setHasProvider] = useState(true)
+
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/login')
     }
   }, [user, loading, router])
 
+  // Fetch onboarding state and AI provider configuration status on mount
+  useEffect(() => {
+    if (!token || loading || !user) return
+    const checkOnboardingAndProviders = async () => {
+      try {
+        const biz = await api.getMyBusiness(token)
+        if (!biz.onboarding_completed) {
+          router.replace('/onboarding')
+          return
+        }
+        setOnboardingChecked(true)
+
+        const providers = await api.getProviders(token)
+        const active = providers.some((p: any) => p.is_active)
+        setHasProvider(active)
+      } catch (err) {
+        console.error('Error verifying onboarding or provider configurations:', err)
+        setOnboardingChecked(true) // Bypass on failures to avoid complete workspace blockages
+      }
+    }
+    checkOnboardingAndProviders()
+  }, [token, user, loading, router])
+
   // Fetch the agent status periodically
   useEffect(() => {
-    if (!token) return
+    if (!token || !onboardingChecked) return
     const fetchStatus = async () => {
       try {
         const list = await api.getEmployees(token)
@@ -75,9 +102,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     fetchStatus()
     const interval = setInterval(fetchStatus, 15000)
     return () => clearInterval(interval)
-  }, [token])
+  }, [token, onboardingChecked])
 
-  if (loading || !user) {
+  if (loading || !user || !onboardingChecked) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-[#09090b]">
         <div className="flex flex-col items-center gap-3">
@@ -305,6 +332,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Dynamic page contents nested inside scroll wrapper */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-[#09090b] to-[#040405]">
           <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+            {!hasProvider && (
+              <div className="border border-amber-500/30 bg-amber-500/5 text-amber-400 p-3.5 rounded-lg flex items-center justify-between text-xs font-sans gap-4 shadow-lg shadow-amber-500/5">
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={16} />
+                  <span>Connect an AI Provider to enable AI Employees.</span>
+                </div>
+                <Link href="/settings" className="font-semibold underline hover:text-amber-300">
+                  Settings &rarr;
+                </Link>
+              </div>
+            )}
             {children}
           </div>
         </main>
