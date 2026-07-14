@@ -8,6 +8,8 @@ interface User {
   id: string
   email: string
   fullName?: string
+  profileImage?: string
+  provider?: string
 }
 
 interface AuthContextType {
@@ -16,6 +18,7 @@ interface AuthContextType {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, fullName: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -51,6 +54,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: session.user.id,
             email: session.user.email || '',
             fullName: session.user.user_metadata?.full_name || '',
+            profileImage: session.user.user_metadata?.avatar_url || '',
+            provider: session.user.app_metadata?.provider || 'email',
           })
           setToken(session.access_token)
         }
@@ -70,6 +75,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: session.user.id,
           email: session.user.email || '',
           fullName: session.user.user_metadata?.full_name || '',
+          profileImage: session.user.user_metadata?.avatar_url || '',
+          provider: session.user.app_metadata?.provider || 'email',
         })
         setToken(session.access_token)
       } else {
@@ -94,6 +101,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: '00000000-0000-0000-0000-000000000000',
           email,
           fullName: email.split('@')[0].toUpperCase(),
+          profileImage: '',
+          provider: 'email'
         }
         setUser(sandboxUser)
         setToken(`dev-token-${email}`)
@@ -110,6 +119,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: data.user.id,
           email: data.user.email || '',
           fullName: data.user.user_metadata?.full_name || '',
+          profileImage: data.user.user_metadata?.avatar_url || '',
+          provider: data.user.app_metadata?.provider || 'email',
         })
         setToken(data.session.access_token)
         router.push('/dashboard')
@@ -117,6 +128,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       setLoading(false)
       throw new Error(error.message || 'Login failed')
+    }
+  }
+
+  const signInWithGoogle = async () => {
+    setLoading(true)
+    try {
+      if (!isSupabaseConfigured()) {
+        // Dev Sandbox Google Login Simulation
+        const sandboxUser = {
+          id: 'dev-google-uuid-sandbox',
+          email: 'google-user@agentra.ai',
+          fullName: 'Google Dev Sandbox User',
+          profileImage: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
+          provider: 'google',
+        }
+        setUser(sandboxUser)
+        setToken('dev-token-google-user@agentra.ai')
+        localStorage.setItem('agentra_sandbox_user', JSON.stringify(sandboxUser))
+        router.push('/dashboard')
+        return
+      }
+
+      // Real Supabase Google Login
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      if (error) throw error
+    } catch (error: any) {
+      setLoading(false)
+      throw new Error(error.message || 'Google login failed')
     }
   }
 
@@ -128,6 +172,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: '00000000-0000-0000-0000-000000000000',
           email,
           fullName,
+          profileImage: '',
+          provider: 'email'
         }
         setUser(sandboxUser)
         setToken(`dev-token-${email}`)
@@ -152,6 +198,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: data.user?.id || '',
           email: data.user?.email || '',
           fullName,
+          profileImage: data.user?.user_metadata?.avatar_url || '',
+          provider: data.user?.app_metadata?.provider || 'email',
         })
         setToken(data.session.access_token)
         router.push('/dashboard')
@@ -190,7 +238,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, token, loading, signIn, signUp, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   )

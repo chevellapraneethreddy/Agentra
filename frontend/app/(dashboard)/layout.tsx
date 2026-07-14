@@ -314,8 +314,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Profile widget */}
             <div className="flex items-center gap-2 pl-2 border-l border-zinc-800">
-              <div className="h-8 w-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300">
-                <User size={14} />
+              <div className="h-8 w-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 overflow-hidden">
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt={user.fullName || 'User'} className="h-full w-full object-cover" />
+                ) : (
+                  <User size={14} />
+                )}
               </div>
               <div className="hidden lg:flex flex-col text-left">
                 <span className="text-xs font-semibold text-white truncate max-w-[120px]">
