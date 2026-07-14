@@ -25,3 +25,7 @@ frontend/out/
 *.log
 .gemini/
 .agents/
+
+# Monorepo / CLI
+node_modules/
+dist/

@@ -1,0 +1,14 @@
+{
+  "name": "agentra-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "agentra-cli"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=@agentra/cli",
+    "link": "npm link --prefix agentra-cli",
+    "dev": "npm run dev --workspace=frontend"
+  }
+}
