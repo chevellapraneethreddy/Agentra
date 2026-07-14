@@ -7,7 +7,7 @@
     "agentra-cli"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@agentra/cli",
+    "build": "npm run build --workspace=@agentra-a/cli",
     "link": "npm link --prefix agentra-cli",
     "dev": "npm run dev --workspace=frontend"
   }

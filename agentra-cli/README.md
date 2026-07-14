@@ -1,4 +1,4 @@
-# @agentra/cli
+# @agentra-a/cli
 
 Agentra Command Line Interface (CLI) is an interactive developer tool designed to manage autonomous AI Employees and trigger operational workflows from your console.
 

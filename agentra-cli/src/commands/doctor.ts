@@ -33,7 +33,7 @@ export async function doctorCommand(): Promise<void> {
 
   // 4. Internet Connectivity Check
   try {
-    await axios.get('https://registry.npmjs.org/@agentra/cli/latest', { timeout: 3000 });
+    await axios.get('https://registry.npmjs.org/@agentra-a/cli/latest', { timeout: 3000 });
     console.log(`- Internet Connection: ${chalk.green('Connected')}`);
   } catch (err) {
     // If it's a 404 from NPM registry it means we are connected but the package doesn't exist yet!

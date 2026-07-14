@@ -1,6 +1,6 @@
 {
-  "name": "@agentra/cli",
-  "version": "0.1.0",
+  "name": "@agentra-a/cli",
+  "version": "0.1.1",
   "description": "Agentra Generative AI as a Service CLI",
   "type": "module",
   "main": "dist/index.js",

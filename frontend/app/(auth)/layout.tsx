@@ -32,7 +32,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       }
     }
 
-    fetch('https://registry.npmjs.org/@agentra/cli/latest')
+    fetch('https://registry.npmjs.org/@agentra-a/cli/latest')
       .then(res => {
         if (res.status === 200) {
           setIsPublished(true);
@@ -72,7 +72,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   const getCommandText = (): string => {
     if (isPublished) {
-      return 'npx @agentra/cli@latest';
+      return 'npx @agentra-a/cli@latest';
     }
     switch (selectedTab) {
       case 'powershell':
@@ -192,7 +192,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                       {isPublished ? (
                         <div className="flex items-center gap-2">
                           <span className="text-blue-500 font-semibold">$</span>
-                          <span className="text-white font-semibold">npx @agentra/cli@latest</span>
+                          <span className="text-white font-semibold">npx @agentra-a/cli@latest</span>
                         </div>
                       ) : selectedTab === 'powershell' ? (
                         <div className="space-y-1 font-mono text-xs text-left">
