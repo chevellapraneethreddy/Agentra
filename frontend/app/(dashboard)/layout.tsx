@@ -54,6 +54,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [agentStatus, setAgentStatus] = useState<'idle' | 'running' | 'paused'>('idle')
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
 
   const [onboardingChecked, setOnboardingChecked] = useState(false)
   const [hasProvider, setHasProvider] = useState(true)
@@ -313,22 +314,61 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* Profile widget */}
-            <div className="flex items-center gap-2 pl-2 border-l border-zinc-800">
-              <div className="h-8 w-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 overflow-hidden">
-                {user.profileImage ? (
-                  <img src={user.profileImage} alt={user.fullName || 'User'} className="h-full w-full object-cover" />
-                ) : (
-                  <User size={14} />
+            <div className="relative">
+              <button
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center gap-2 pl-2 border-l border-zinc-800 cursor-pointer focus:outline-none select-none text-left"
+              >
+                <div className="h-8 w-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 overflow-hidden">
+                  {user && user.profileImage ? (
+                    <img src={user.profileImage} alt={user.fullName || 'User'} className="h-full w-full object-cover" />
+                  ) : (
+                    <User size={14} />
+                  )}
+                </div>
+                {user && (
+                  <div className="hidden lg:flex flex-col text-left">
+                    <span className="text-xs font-semibold text-white truncate max-w-[120px]">
+                      {user.fullName || 'User Profile'}
+                    </span>
+                    <span className="text-[10px] text-zinc-500 truncate max-w-[120px]">
+                      {user.email}
+                    </span>
+                  </div>
                 )}
-              </div>
-              <div className="hidden lg:flex flex-col text-left">
-                <span className="text-xs font-semibold text-white truncate max-w-[120px]">
-                  {user.fullName || 'User Profile'}
-                </span>
-                <span className="text-[10px] text-zinc-500 truncate max-w-[120px]">
-                  {user.email}
-                </span>
-              </div>
+              </button>
+
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 rounded-lg border border-zinc-800 bg-zinc-950 shadow-2xl z-50 p-1 divide-y divide-zinc-900 font-sans text-xs">
+                  <div className="py-1">
+                    <Link
+                      href="/settings"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex w-full items-center px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-white rounded transition-colors"
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      href="/settings"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex w-full items-center px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-white rounded transition-colors"
+                    >
+                      Account Settings
+                    </Link>
+                  </div>
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        signOut();
+                      }}
+                      className="flex w-full items-center px-3 py-2 text-red-400 hover:bg-red-950/20 hover:text-red-300 rounded transition-colors text-left font-medium cursor-pointer"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
