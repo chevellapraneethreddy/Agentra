@@ -114,7 +114,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="lg:col-span-5 flex flex-col justify-center space-y-6">
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
             <Link href="/" className="flex items-center gap-2.5 font-semibold text-lg tracking-tight text-white mb-2">
-              <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-650 flex items-center justify-center text-xs text-white font-bold">A</div>
+              <img src="/logo.jpg" alt="Agentra Logo" className="h-7 w-7 rounded-lg object-cover" />
               <span className="font-mono uppercase tracking-wider text-sm">Agentra</span>
             </Link>
             <p className="text-xs text-zinc-400">Generative AI as a Service Platform</p>

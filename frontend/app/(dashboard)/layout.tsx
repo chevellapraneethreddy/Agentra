@@ -173,9 +173,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Sidebar Header Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-zinc-800/80">
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="h-8 w-8 min-w-[32px] rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-xs text-white font-bold shadow-lg shadow-blue-600/20">
-              A
-            </div>
+            <img src="/logo.jpg" alt="Agentra Logo" className="h-8 w-8 min-w-[32px] rounded-lg object-cover shadow-lg" />
             {!sidebarCollapsed && (
               <span className="font-bold text-lg tracking-tight text-white animate-in fade-in duration-300">
                 Agentra
@@ -253,9 +251,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="w-64 bg-zinc-950 border-r border-zinc-800 flex flex-col h-full animate-in slide-in-from-left duration-300">
             <div className="h-16 flex items-center justify-between px-4 border-b border-zinc-800">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-xs text-white font-bold shadow-lg shadow-blue-600/20">
-                  A
-                </div>
+                <img src="/logo.jpg" alt="Agentra Logo" className="h-8 w-8 rounded-lg object-cover shadow-lg" />
                 <span className="font-bold text-lg tracking-tight text-white">Agentra</span>
               </div>
               <button
